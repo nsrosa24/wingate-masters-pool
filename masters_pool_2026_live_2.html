@@ -1,0 +1,456 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>2026 Wingate Masters Pool</title>
+<link href="https://fonts.googleapis.com/css2?family=Playfair+Display:ital,wght@0,400;0,700;0,900;1,400&family=EB+Garamond:ital,wght@0,400;0,500;1,400&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --green-dark: #1a3a2a;
+    --green-mid: #2d5a3d;
+    --green-light: #4a8c5c;
+    --gold: #c9a84c;
+    --gold-light: #e8c87a;
+    --cream: #f5f0e8;
+    --white: #fefefe;
+    --text-dark: #1a1a1a;
+    --red: #e06060;
+    --border: rgba(201,168,76,0.3);
+  }
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+  body { font-family: 'EB Garamond', Georgia, serif; background: var(--green-dark); color: var(--cream); min-height: 100vh; }
+
+  /* HEADER */
+  header { background: linear-gradient(160deg, #0d2118 0%, var(--green-dark) 60%, #0f2d1e 100%); border-bottom: 2px solid var(--gold); position: relative; overflow: hidden; }
+  header::before { content: ''; position: absolute; inset: 0; background: radial-gradient(ellipse at 50% 0%, rgba(201,168,76,0.08) 0%, transparent 70%); pointer-events: none; }
+  .header-inner { max-width: 1260px; margin: 0 auto; padding: 28px 24px 24px; text-align: center; position: relative; }
+  .header-year { font-size: 12px; letter-spacing: 6px; text-transform: uppercase; color: var(--gold); margin-bottom: 6px; }
+  h1 { font-family: 'Playfair Display', serif; font-size: clamp(26px, 5vw, 48px); font-weight: 900; color: var(--white); line-height: 1.1; margin-bottom: 4px; }
+  h1 span { color: var(--gold); font-style: italic; }
+  .header-subtitle { font-size: 12px; letter-spacing: 4px; text-transform: uppercase; color: rgba(201,168,76,0.6); margin-top: 6px; }
+  .header-logo { width: 72px; height: 72px; margin: 0 auto 12px; opacity: 1; }
+
+  /* STATUS BAR */
+  .status-bar { background: rgba(0,0,0,0.5); border-bottom: 1px solid var(--border); padding: 7px 20px; display: flex; align-items: center; justify-content: center; gap: 16px; flex-wrap: wrap; }
+  .status-dot { width: 7px; height: 7px; border-radius: 50%; background: #888; display: inline-block; }
+  .status-dot.live { background: #4caf50; box-shadow: 0 0 6px #4caf50; animation: pulse 1.5s infinite; }
+  .status-dot.error { background: var(--red); }
+  @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+  .status-text { font-size: 12px; letter-spacing: 1.5px; text-transform: uppercase; color: rgba(245,240,232,0.55); }
+  .status-text strong { color: rgba(245,240,232,0.8); }
+  .refresh-btn { background: none; border: 1px solid var(--border); color: var(--gold); font-family: 'EB Garamond', serif; font-size: 12px; letter-spacing: 1px; padding: 3px 10px; border-radius: 4px; cursor: pointer; text-transform: uppercase; transition: all 0.2s; }
+  .refresh-btn:hover { background: rgba(201,168,76,0.1); }
+
+  /* NAV */
+  nav { background: rgba(0,0,0,0.35); border-bottom: 1px solid var(--border); }
+  .nav-inner { max-width: 1260px; margin: 0 auto; display: flex; }
+  .nav-btn { flex: 1; padding: 13px 20px; background: none; border: none; border-bottom: 2px solid transparent; color: rgba(245,240,232,0.5); font-family: 'EB Garamond', serif; font-size: 14px; letter-spacing: 2px; text-transform: uppercase; cursor: pointer; transition: all 0.2s; }
+  .nav-btn:hover { color: var(--gold-light); }
+  .nav-btn.active { color: var(--gold); border-bottom-color: var(--gold); background: rgba(201,168,76,0.06); }
+
+  /* PAGES */
+  .page { display: none; }
+  .page.active { display: block; animation: fadeUp 0.3s ease both; }
+  @keyframes fadeUp { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } }
+
+  /* RULES */
+  .rules-page { max-width: 700px; margin: 0 auto; padding: 52px 24px; }
+  .rules-title { font-family: 'Playfair Display', serif; font-size: 34px; font-weight: 700; color: var(--gold); text-align: center; margin-bottom: 6px; }
+  .rules-divider { display: flex; align-items: center; gap: 16px; margin: 18px 0 36px; color: var(--gold); opacity: 0.5; font-size: 11px; letter-spacing: 4px; text-transform: uppercase; }
+  .rules-divider::before, .rules-divider::after { content: ''; flex: 1; height: 1px; background: linear-gradient(90deg, transparent, var(--gold), transparent); opacity: 0.4; }
+  .scoring-grid { display: grid; gap: 2px; margin-bottom: 36px; border: 1px solid var(--border); border-radius: 8px; overflow: hidden; }
+  .scoring-row { display: flex; justify-content: space-between; align-items: center; padding: 15px 22px; background: rgba(255,255,255,0.03); }
+  .scoring-row:first-child { background: rgba(201,168,76,0.1); }
+  .scoring-label { font-size: 16px; }
+  .scoring-pts { font-family: 'Playfair Display', serif; font-size: 20px; font-weight: 700; color: var(--gold); }
+  .scoring-pts.neg { color: var(--red); }
+  .scoring-pts::after { content: ' pts'; font-size: 12px; font-weight: 400; opacity: 0.6; }
+  .rules-note { background: rgba(201,168,76,0.07); border: 1px solid var(--border); border-left: 3px solid var(--gold); border-radius: 0 8px 8px 0; padding: 16px 20px; font-style: italic; color: rgba(245,240,232,0.8); font-size: 15px; line-height: 1.6; }
+  .rules-section { font-family: 'Playfair Display', serif; font-size: 18px; color: var(--gold-light); margin: 32px 0 12px; padding-bottom: 7px; border-bottom: 1px solid var(--border); }
+  .rules-text { font-size: 15px; line-height: 1.8; color: rgba(245,240,232,0.82); }
+
+  /* POOL LAYOUT */
+  .pool-page { max-width: 1260px; margin: 0 auto; padding: 36px 20px; display: grid; grid-template-columns: 300px 1fr; gap: 24px; align-items: start; }
+  @media (max-width: 860px) { .pool-page { grid-template-columns: 1fr; } }
+
+  /* PANELS */
+  .panel { background: rgba(0,0,0,0.28); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; margin-bottom: 20px; }
+  .panel-head { background: linear-gradient(135deg, var(--green-mid), var(--green-dark)); padding: 16px 20px; border-bottom: 1px solid var(--border); }
+  .panel-title { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--gold); }
+  .panel-sub { font-size: 11px; color: rgba(245,240,232,0.45); letter-spacing: 2px; text-transform: uppercase; margin-top: 2px; }
+
+  /* STANDINGS */
+  .s-table { width: 100%; border-collapse: collapse; }
+  .s-table th { font-size: 10px; letter-spacing: 2px; text-transform: uppercase; color: var(--gold); padding: 9px 18px; text-align: left; background: rgba(201,168,76,0.06); border-bottom: 1px solid var(--border); }
+  .s-table td { padding: 13px 18px; font-size: 15px; border-bottom: 1px solid rgba(255,255,255,0.04); vertical-align: middle; }
+  .s-table tr:last-child td { border-bottom: none; }
+  .s-table tr:hover td { background: rgba(201,168,76,0.04); }
+  .badge { display: inline-flex; align-items: center; justify-content: center; width: 26px; height: 26px; border-radius: 50%; font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 700; }
+  .b1 { background: var(--gold); color: var(--green-dark); }
+  .b2 { background: rgba(190,195,210,0.28); color: var(--cream); }
+  .b3 { background: rgba(180,115,55,0.35); color: var(--cream); }
+  .bx { background: rgba(255,255,255,0.07); color: rgba(245,240,232,0.5); font-size: 11px; }
+  .pts-big { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 17px; color: var(--gold-light); }
+
+  /* PAY */
+  .pay-row { display: flex; justify-content: space-between; padding: 11px 20px; font-size: 14px; border-bottom: 1px solid rgba(255,255,255,0.04); color: rgba(245,240,232,0.75); }
+  .pay-row:last-child { border-bottom: none; }
+  .pay-total { font-family: 'Playfair Display', serif; font-weight: 700; color: var(--gold); background: rgba(201,168,76,0.08); font-size: 15px; }
+  .pay-amt { font-family: 'Playfair Display', serif; color: var(--gold-light); font-weight: 700; }
+
+  /* TEAMS GRID */
+  .teams-section-label { font-family: 'Playfair Display', serif; font-size: 19px; color: var(--gold); padding: 0 4px 14px; border-bottom: 1px solid var(--border); margin-bottom: 20px; }
+  .teams-section-label span { font-size: 11px; font-weight: 400; letter-spacing: 2px; text-transform: uppercase; color: rgba(245,240,232,0.4); font-family: 'EB Garamond', serif; display: block; margin-top: 2px; }
+  .teams-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(290px, 1fr)); gap: 18px; }
+  .team-card { background: rgba(0,0,0,0.26); border: 1px solid var(--border); border-radius: 10px; overflow: hidden; transition: border-color 0.2s, transform 0.2s; }
+  .team-card:hover { border-color: rgba(201,168,76,0.48); transform: translateY(-2px); }
+  .tc-head { background: linear-gradient(135deg, rgba(45,90,61,0.65), rgba(26,58,42,0.9)); padding: 13px 16px; border-bottom: 1px solid var(--border); display: flex; align-items: center; justify-content: space-between; }
+  .tc-name { font-family: 'Playfair Display', serif; font-size: 16px; font-weight: 700; color: var(--white); }
+  .tc-pts { font-family: 'Playfair Display', serif; font-size: 14px; font-weight: 700; padding: 2px 9px; border-radius: 20px; background: rgba(201,168,76,0.14); border: 1px solid var(--border); color: var(--gold-light); }
+  .p-table { width: 100%; border-collapse: collapse; }
+  .p-table th { font-size: 9px; letter-spacing: 2px; text-transform: uppercase; color: rgba(201,168,76,0.55); padding: 7px 12px; text-align: left; background: rgba(0,0,0,0.18); border-bottom: 1px solid rgba(255,255,255,0.05); }
+  .p-table td { padding: 9px 12px; font-size: 13.5px; border-bottom: 1px solid rgba(255,255,255,0.04); }
+  .p-table tr:last-child td { border-bottom: none; }
+  .p-table tr.total-row td { background: rgba(201,168,76,0.06); border-top: 1px solid var(--border); font-family: 'Playfair Display', serif; font-weight: 700; font-size: 12px; color: var(--gold); padding-top: 9px; padding-bottom: 9px; }
+  .pn { font-size: 10px; color: rgba(245,240,232,0.3); width: 18px; }
+  .ps { font-family: 'Playfair Display', serif; font-weight: 700; font-size: 14px; text-align: right; }
+  .ps.under { color: #6ec97a; }
+  .ps.over  { color: var(--red); }
+  .ps.even  { color: var(--cream); }
+  .ps.dash  { color: rgba(245,240,232,0.25); }
+  .pp { font-size: 11px; text-align: right; color: rgba(245,240,232,0.45); }
+  .ppts { font-family: 'Playfair Display', serif; font-size: 13px; font-weight: 700; text-align: right; color: var(--gold-light); }
+  .ppts.zero { color: rgba(245,240,232,0.2); }
+  .cut-row td { opacity: 0.45; text-decoration: line-through; }
+  .cut-badge { font-size: 9px; background: rgba(224,96,96,0.2); border: 1px solid rgba(224,96,96,0.4); color: var(--red); padding: 1px 5px; border-radius: 3px; margin-left: 5px; vertical-align: middle; text-decoration: none; display: inline-block; }
+
+  /* LOADING */
+  .loading-overlay { text-align: center; padding: 48px 20px; }
+  .spinner { width: 32px; height: 32px; border: 2px solid rgba(201,168,76,0.2); border-top-color: var(--gold); border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 16px; }
+  @keyframes spin { to { transform: rotate(360deg); } }
+  .loading-text { font-size: 13px; letter-spacing: 2px; text-transform: uppercase; color: rgba(245,240,232,0.4); }
+
+  footer { text-align: center; padding: 28px 20px; border-top: 1px solid var(--border); font-size: 11px; letter-spacing: 2px; text-transform: uppercase; color: rgba(245,240,232,0.18); margin-top: 20px; }
+</style>
+</head>
+<body>
+
+<header>
+  <div class="header-inner">
+    <img src="data:image/jpeg;base64,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" class="header-logo" alt="Wingate" style="width:72px;height:72px;object-fit:contain;border-radius:6px;">
+    <div class="header-year">Augusta National · April 2026</div>
+    <h1>Wingate <span>Masters</span> Pool</h1>
+    <div class="header-subtitle">The 90th Masters Tournament</div>
+  </div>
+</header>
+
+<div class="status-bar">
+  <span class="status-dot" id="status-dot"></span>
+  <span class="status-text" id="status-text">Connecting to live scores…</span>
+  <button class="refresh-btn" onclick="fetchScores()">↻ Refresh</button>
+</div>
+
+<nav>
+  <div class="nav-inner">
+    <button class="nav-btn active" onclick="showPage('rules',this)">⛳ Rules</button>
+    <button class="nav-btn" onclick="showPage('pool',this)">🏆 Leaderboard & Picks</button>
+  </div>
+</nav>
+
+<!-- RULES PAGE -->
+<div id="page-rules" class="page active">
+  <div class="rules-page">
+    <div class="rules-title">Pool Rules</div>
+    <div class="rules-divider">2026 · Augusta</div>
+    <div class="rules-section">⛳ How It Works</div>
+    <p class="rules-text">Each participant selects <strong>6 golfers</strong> before the tournament begins. Points are awarded based on each golfer's final finishing position. The participant with the most total points at the end wins.</p>
+    <div class="rules-section">🏅 Scoring System</div>
+    <div class="scoring-grid">
+      <div class="scoring-row"><span class="scoring-label">🥇 1st Place (Winner)</span><span class="scoring-pts">12</span></div>
+      <div class="scoring-row"><span class="scoring-label">Top 5 Finish</span><span class="scoring-pts">7</span></div>
+      <div class="scoring-row"><span class="scoring-label">Top 10 Finish</span><span class="scoring-pts">4</span></div>
+      <div class="scoring-row"><span class="scoring-label">Top 25 Finish</span><span class="scoring-pts">2</span></div>
+      <div class="scoring-row"><span class="scoring-label">Below Top 25</span><span class="scoring-pts">1</span></div>
+      <div class="scoring-row"><span class="scoring-label">Missed Cut</span><span class="scoring-pts neg">-2</span></div>
+    </div>
+    <div class="rules-note"><strong>Tiebreaker:</strong> In the event of a tied score, the tiebreaker is determined by the team's total score to par across all 6 golfers. Closest to par wins.</div>
+    <div class="rules-section">💵 Buy-In</div>
+    <p class="rules-text">Each participant contributes <strong>$10</strong> to the pool. Total pot: <strong>$30</strong>. Winner takes all.</p>
+    <div class="rules-section">👤 Participants</div>
+    <p class="rules-text">Grayson Sallade · Brendan Dunphy · Nick Rosa</p>
+  </div>
+</div>
+
+<!-- POOL PAGE -->
+<div id="page-pool" class="page">
+  <div class="pool-page">
+    <!-- LEFT -->
+    <div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">🏆 Standings</div><div class="panel-sub">Pool Leaderboard</div></div>
+        <div id="standings-wrap"><div class="loading-overlay"><div class="spinner"></div><div class="loading-text">Loading scores…</div></div></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">💵 Pay Tally</div><div class="panel-sub">Entry Fees</div></div>
+        <div id="pay-wrap"></div>
+      </div>
+      <div class="panel">
+        <div class="panel-head"><div class="panel-title">📡 Live Leaderboard</div><div class="panel-sub">Top 15 at Augusta</div></div>
+        <div id="live-lb-wrap"><div class="loading-overlay"><div class="spinner"></div><div class="loading-text">Loading…</div></div></div>
+      </div>
+    </div>
+    <!-- RIGHT -->
+    <div>
+      <div class="teams-section-label">⛳ Team Picks <span>Individual selections & live scoring</span></div>
+      <div class="teams-grid" id="teams-grid">
+        <div class="loading-overlay" style="grid-column:1/-1"><div class="spinner"></div><div class="loading-text">Fetching live scores…</div></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<footer>2026 Wingate Masters Pool · Augusta National · Scores via ESPN · Auto-refreshes every 5 minutes</footer>
+
+<script>
+// ═══════════════════════════════ POOL DATA ════════════════════════════════
+const TEAMS = [
+  { name: "Grayson Sallade", picks: ["Scottie Scheffler","Rory McIlroy","Hideki Matsuyama","Chris Gotterup","Akshay Bhatia","Jason Day"] },
+  { name: "Brendan Dunphy",  picks: ["Jon Rahm","Scottie Scheffler","Robert MacIntyre","Patrick Reed","Shane Lowry","Min Woo Lee"] },
+  { name: "Nick Rosa",       picks: ["Rory McIlroy","Tommy Fleetwood","Justin Rose","Si Woo Kim","Corey Conners","J.J. Spaun"] },
+];
+const PAY = [{ name:"Grayson Sallade",paid:10},{ name:"Brendan Dunphy",paid:10},{ name:"Nick Rosa",paid:10}];
+
+// ═══════════════════════════ SCORING LOGIC ═══════════════════════════════
+function getPoints(place, status) {
+  if (status === 'cut') return -2;
+  if (!place || place === '-') return 0;
+  const p = parseInt(String(place).replace('T',''));
+  if (isNaN(p)) return 0;
+  if (p === 1) return 12;
+  if (p <= 5)  return 7;
+  if (p <= 10) return 4;
+  if (p <= 25) return 2;
+  return 1;
+}
+
+// ══════════════════════════ ESPN API FETCH ════════════════════════════════
+// ESPN's free public golf scoreboard endpoint — no key needed
+const ESPN_URL = 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard';
+
+let liveScores = {}; // { "Player Name": { score, place, status } }
+let lastUpdated = null;
+let refreshTimer = null;
+
+async function fetchScores() {
+  setStatus('loading');
+  try {
+    const res = await fetch(ESPN_URL);
+    if (!res.ok) throw new Error('HTTP ' + res.status);
+    const data = await res.json();
+
+    // Find the Masters event
+    const events = data.events || [];
+    const masters = events.find(e =>
+      (e.name || '').toLowerCase().includes('master') ||
+      (e.shortName || '').toLowerCase().includes('master')
+    ) || events[0];
+
+    if (!masters) throw new Error('Masters event not found in ESPN data');
+
+    // Extract competitors
+    const newScores = {};
+    const leaderboardRows = [];
+
+    const comps = masters.competitions?.[0]?.competitors || [];
+    comps.forEach(c => {
+      const raw  = c.athlete?.displayName || c.athlete?.fullName || '';
+      const name = normName(raw);
+      const scoreVal = c.score || c.linescores?.reduce((s,l)=>s+(parseInt(l.value)||0),0) || 0;
+      const scoreDisp = c.scoreValue !== undefined
+        ? fmtScore(c.scoreValue)
+        : (c.score !== undefined ? fmtScore(parseInt(c.score)) : '-');
+      const place  = c.status?.position?.id || c.sortOrder || '';
+      const status = (c.status?.type?.name || '').toLowerCase().includes('cut') ? 'cut'
+                   : (c.active ? 'active' : 'final');
+      newScores[name] = { score: scoreDisp, rawScore: parseInt(c.score)||0, place: String(place||''), status };
+      leaderboardRows.push({ name: raw, score: scoreDisp, place: String(place||''), status });
+    });
+
+    liveScores = newScores;
+    lastUpdated = new Date();
+    setStatus('live');
+    renderAll(leaderboardRows);
+  } catch(err) {
+    console.warn('ESPN fetch failed:', err);
+    setStatus('error', err.message);
+    // Still render with dash scores
+    renderAll([]);
+  }
+}
+
+function normName(n) {
+  return n.trim().toLowerCase()
+    .replace(/\./g,'').replace(/\s+/g,' ')
+    .replace(/^(de|van|mc)/,'');
+}
+
+function lookupPlayer(name) {
+  const key = normName(name);
+  // Try exact
+  if (liveScores[key]) return liveScores[key];
+  // Try fuzzy: check if any stored key contains each word
+  const words = key.split(' ').filter(w=>w.length>2);
+  for (const [k,v] of Object.entries(liveScores)) {
+    if (words.every(w => k.includes(w))) return v;
+  }
+  return null;
+}
+
+function fmtScore(n) {
+  if (isNaN(n)) return '-';
+  if (n === 0) return 'E';
+  return n > 0 ? '+'+n : String(n);
+}
+
+function scoreClass(s) {
+  if (!s || s==='-') return 'dash';
+  if (s==='E') return 'even';
+  if (s.startsWith('-')) return 'under';
+  return 'over';
+}
+
+// ═══════════════════════════════ RENDER ══════════════════════════════════
+function renderAll(leaderboardRows) {
+  renderStandings();
+  renderPay();
+  renderTeams();
+  renderLiveLeaderboard(leaderboardRows);
+}
+
+function renderStandings() {
+  const sorted = TEAMS.map(t => {
+    let pts = 0;
+    t.picks.forEach(p => {
+      const d = lookupPlayer(p);
+      pts += d ? getPoints(d.place, d.status) : 0;
+    });
+    return { name: t.name, pts };
+  }).sort((a,b) => b.pts - a.pts);
+
+  let html = `<table class="s-table"><thead><tr><th></th><th>Participant</th><th style="text-align:right">Pts</th></tr></thead><tbody>`;
+  sorted.forEach((t,i) => {
+    const bc = i===0?'b1':i===1?'b2':i===2?'b3':'bx';
+    html += `<tr><td><span class="badge ${bc}">${i+1}</span></td><td>${t.name}</td><td style="text-align:right"><span class="pts-big">${t.pts}</span></td></tr>`;
+  });
+  html += '</tbody></table>';
+  document.getElementById('standings-wrap').innerHTML = html;
+}
+
+function renderPay() {
+  const total = PAY.reduce((s,p)=>s+p.paid,0);
+  let html = PAY.map(p=>`<div class="pay-row"><span>${p.name}</span><span class="pay-amt">$${p.paid}</span></div>`).join('');
+  html += `<div class="pay-row pay-total"><span>Total Pot</span><span class="pay-amt">$${total}</span></div>`;
+  document.getElementById('pay-wrap').innerHTML = html;
+}
+
+function renderTeams() {
+  const grid = document.getElementById('teams-grid');
+  grid.innerHTML = '';
+  TEAMS.forEach(team => {
+    let totalPts = 0;
+    let rows = '';
+    team.picks.forEach((player,i) => {
+      const d = lookupPlayer(player);
+      const pts = d ? getPoints(d.place, d.status) : 0;
+      totalPts += pts;
+      const sc   = d?.score  || '-';
+      const pl   = d?.place  || '-';
+      const isCut = d?.status === 'cut';
+      rows += `<tr class="${isCut?'cut-row':''}">
+        <td class="pn">${i+1}</td>
+        <td>${player}${isCut?'<span class="cut-badge">CUT</span>':''}</td>
+        <td class="ps ${scoreClass(sc)}">${sc}</td>
+        <td class="pp">${pl}</td>
+        <td class="ppts ${pts===0?'zero':''}">${pts}</td>
+      </tr>`;
+    });
+    const card = document.createElement('div');
+    card.className = 'team-card';
+    card.innerHTML = `
+      <div class="tc-head">
+        <span class="tc-name">${team.name}</span>
+        <span class="tc-pts">${totalPts} pts</span>
+      </div>
+      <table class="p-table">
+        <thead><tr><th class="pn">#</th><th>Golfer</th><th style="text-align:right">Score</th><th style="text-align:right">Pos</th><th style="text-align:right">Pts</th></tr></thead>
+        <tbody>
+          ${rows}
+          <tr class="total-row">
+            <td colspan="4" style="text-align:right; letter-spacing:1px; font-size:11px;">TOTAL</td>
+            <td class="ppts">${totalPts}</td>
+          </tr>
+        </tbody>
+      </table>`;
+    grid.appendChild(card);
+  });
+}
+
+function renderLiveLeaderboard(rows) {
+  const wrap = document.getElementById('live-lb-wrap');
+  if (!rows.length) { wrap.innerHTML = '<div style="padding:16px 20px; font-size:13px; color:rgba(245,240,232,0.35); text-align:center;">Scores not yet available</div>'; return; }
+  // Sort by place number, put cuts at end
+  const sorted = [...rows].sort((a,b) => {
+    if (a.status==='cut' && b.status!=='cut') return 1;
+    if (b.status==='cut' && a.status!=='cut') return -1;
+    return (parseInt(a.place)||999)-(parseInt(b.place)||999);
+  }).slice(0,15);
+
+  let html = `<table class="s-table"><thead><tr><th>Pos</th><th>Player</th><th style="text-align:right">Score</th></tr></thead><tbody>`;
+  sorted.forEach(r => {
+    html += `<tr style="${r.status==='cut'?'opacity:0.4':''}">
+      <td style="color:rgba(245,240,232,0.5);font-size:13px">${r.place}</td>
+      <td style="font-size:14px">${r.name}</td>
+      <td class="ps ${scoreClass(r.score)}" style="text-align:right">${r.score}</td>
+    </tr>`;
+  });
+  html += '</tbody></table>';
+  wrap.innerHTML = html;
+}
+
+// ═══════════════════════════ STATUS BAR ══════════════════════════════════
+function setStatus(state, msg) {
+  const dot  = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  dot.className = 'status-dot';
+  if (state === 'live') {
+    dot.classList.add('live');
+    const t = lastUpdated ? lastUpdated.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+    text.innerHTML = `<strong>Live</strong> · Updated ${t} · Auto-refreshes every 5 min`;
+  } else if (state === 'error') {
+    dot.classList.add('error');
+    text.innerHTML = `<strong>Using cached / manual scores</strong>${msg?' · '+msg:''}`;
+  } else {
+    text.innerHTML = 'Fetching live scores…';
+  }
+}
+
+// ══════════════════════════ NAV & INIT ═══════════════════════════════════
+function showPage(name, btn) {
+  document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
+  document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
+  document.getElementById('page-'+name).classList.add('active');
+  btn.classList.add('active');
+}
+
+// Initial render with blanks, then fetch
+renderAll([]);
+renderPay();
+
+fetchScores();
+
+// Auto-refresh every 5 minutes
+refreshTimer = setInterval(fetchScores, 5 * 60 * 1000);
+</script>
+</body>
+</html>
