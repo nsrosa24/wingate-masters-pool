@@ -215,14 +215,31 @@
 <script>
 // ═══════════════════════════════ POOL DATA ════════════════════════════════
 const TEAMS = [
-  { name: "Grayson Sallade", picks: ["Scottie Scheffler","Rory McIlroy","Hideki Matsuyama","Chris Gotterup","Akshay Bhatia","Jason Day"] },
-  { name: "Brendan Dunphy",  picks: ["Jon Rahm","Scottie Scheffler","Robert MacIntyre","Patrick Reed","Shane Lowry","Min Woo Lee"] },
-  { name: "Nick Rosa",       picks: ["Rory McIlroy","Tommy Fleetwood","Justin Rose","Si Woo Kim","Corey Conners","J.J. Spaun"] },
-  { name: "Mike Siciliano",  picks: ["Scottie Scheffler","Bryson DeChambeau","Patrick Reed","Brooks Koepka","Gary Woodland","Shane Lowry"] },
-  { name: "Mike Keegan",     picks: ["Scottie Scheffler","Cameron Young","Justin Rose","Viktor Hovland","Shane Lowry","Akshay Bhatia"] },
-  { name: "Jack Shelton",    picks: ["Scottie Scheffler","Collin Morikawa","Viktor Hovland","Brooks Koepka","Jake Knapp","Justin Thomas"] },
+  { name: "Grayson Sallade",  picks: ["Scottie Scheffler","Rory McIlroy","Hideki Matsuyama","Chris Gotterup","Akshay Bhatia","Jason Day"] },
+  { name: "Brendan Dunphy",   picks: ["Jon Rahm","Scottie Scheffler","Robert MacIntyre","Patrick Reed","Shane Lowry","Min Woo Lee"] },
+  { name: "Nick Rosa",        picks: ["Rory McIlroy","Tommy Fleetwood","Justin Rose","Si Woo Kim","Corey Conners","J.J. Spaun"] },
+  { name: "Mike Siciliano",   picks: ["Scottie Scheffler","Bryson DeChambeau","Patrick Reed","Brooks Koepka","Gary Woodland","Shane Lowry"] },
+  { name: "Mike Keegan",      picks: ["Scottie Scheffler","Cameron Young","Justin Rose","Viktor Hovland","Shane Lowry","Akshay Bhatia"] },
+  { name: "Jack Shelton",     picks: ["Scottie Scheffler","Collin Morikawa","Viktor Hovland","Brooks Koepka","Jake Knapp","Justin Thomas"] },
+  { name: "Eric Rosenthal",   picks: ["Rory McIlroy","Scottie Scheffler","Brooks Koepka","Hideki Matsuyama","Justin Thomas","Tyrrell Hatton"] },
+  { name: "Mark Roth",        picks: ["Scottie Scheffler","Cameron Young","Justin Rose","Viktor Hovland","Patrick Cantlay","Jason Day"] },
+  { name: "Tony Gilberti",    picks: ["Matt Fitzpatrick","Ludvig Aberg","Justin Rose","Robert MacIntyre","Min Woo Lee","Jacob Bridgeman"] },
+  { name: "Al Shorette",      picks: ["Tommy Fleetwood","Ludvig Aberg","Min Woo Lee","Hideki Matsuyama","Akshay Bhatia","Gary Woodland"] },
+  { name: "Dave Blumberg",    picks: ["Tommy Fleetwood","Bryson DeChambeau","Justin Rose","Robert MacIntyre","Akshay Bhatia","Shane Lowry"] },
 ];
-const PAY = [{ name:"Grayson Sallade",paid:10},{ name:"Brendan Dunphy",paid:10},{ name:"Nick Rosa",paid:10},{ name:"Mike Siciliano",paid:10},{ name:"Mike Keegan",paid:10},{ name:"Jack Shelton",paid:10}];
+const PAY = [
+  { name:"Grayson Sallade", paid:10},
+  { name:"Brendan Dunphy",  paid:10},
+  { name:"Nick Rosa",       paid:10},
+  { name:"Mike Siciliano",  paid:10},
+  { name:"Mike Keegan",     paid:10},
+  { name:"Jack Shelton",    paid:10},
+  { name:"Eric Rosenthal",  paid:10},
+  { name:"Mark Roth",       paid:0},
+  { name:"Tony Gilberti",   paid:10},
+  { name:"Al Shorette",     paid:10},
+  { name:"Dave Blumberg",   paid:10},
+];
 
 // ═══════════════════════════ SCORING LOGIC ═══════════════════════════════
 function getPoints(place, status) {
