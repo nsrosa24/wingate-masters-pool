@@ -286,11 +286,13 @@ async function fetchScores() {
     const rawList = comps.map(c => {
       const name     = c.athlete?.displayName || c.athlete?.fullName || '';
       const scoreRaw = parseInt(c.score);
-      const scoreNum = isNaN(scoreRaw) ? 999 : scoreRaw;
-      const scoreDisp = isNaN(scoreRaw) ? '-' : fmtScore(scoreRaw);
+      // ESPN sends "0" for even par and sometimes blank/null for players not yet started
+      const hasStarted = c.score !== null && c.score !== undefined && c.score !== '';
+      const scoreNum  = isNaN(scoreRaw) ? 999 : scoreRaw;
+      const scoreDisp = !hasStarted ? '-' : fmtScore(scoreRaw);
       const typeName  = (c.status?.type?.name || '').toLowerCase();
       const isCut     = typeName.includes('cut') || typeName.includes('wd') || typeName.includes('dq');
-      return { name, scoreNum, scoreDisp, isCut };
+      return { name, scoreNum, scoreDisp, isCut, hasStarted };
     });
 
     // Sort active players by score ascending (best = lowest), cuts at bottom
@@ -362,7 +364,7 @@ function lookupPlayer(name) {
 }
 
 function fmtScore(n) {
-  if (isNaN(n)) return '-';
+  if (isNaN(n) || n === null || n === undefined) return '-';
   if (n === 0) return 'E';
   return n > 0 ? '+'+n : String(n);
 }
