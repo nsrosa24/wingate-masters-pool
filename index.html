@@ -271,7 +271,6 @@ async function fetchScores() {
     if (!res.ok) throw new Error('HTTP ' + res.status);
     const data = await res.json();
 
-    // Find the Masters event
     const events = data.events || [];
     const masters = events.find(e =>
       (e.name || '').toLowerCase().includes('master') ||
@@ -282,48 +281,53 @@ async function fetchScores() {
 
     const comps = masters.competitions?.[0]?.competitors || [];
 
-    // Build raw list with score as a number for sorting
-    const rawList = comps.map(c => {
+    // Step 1: Parse all players
+    const allPlayers = comps.map(c => {
       const name     = c.athlete?.displayName || c.athlete?.fullName || '';
       const scoreRaw = parseInt(c.score);
-      // ESPN sends "0" for even par and sometimes blank/null for players not yet started
-      const hasStarted = c.score !== null && c.score !== undefined && c.score !== '';
-      const scoreNum  = isNaN(scoreRaw) ? 999 : scoreRaw;
-      const scoreDisp = !hasStarted ? '-' : fmtScore(scoreRaw);
-      const typeName  = (c.status?.type?.name || '').toLowerCase();
-      const isCut     = typeName.includes('cut') || typeName.includes('wd') || typeName.includes('dq');
-      return { name, scoreNum, scoreDisp, isCut, hasStarted };
+      const scoreNum = isNaN(scoreRaw) ? null : scoreRaw;
+      const typeName = (c.status?.type?.name || '').toLowerCase();
+      const isCut    = typeName.includes('cut') || typeName.includes('wd') || typeName.includes('dq');
+      // A player has started if they have any linescores or status shows active/complete
+      const statusState = (c.status?.type?.state || '').toLowerCase();
+      const started  = isCut || statusState === 'in' || statusState === 'post' ||
+                       (c.linescores && c.linescores.length > 0);
+      return { name, scoreNum, isCut, started };
     });
 
-    // Sort active players by score ascending (best = lowest), cuts at bottom
-    const active = rawList.filter(p => !p.isCut).sort((a,b) => a.scoreNum - b.scoreNum);
-    const cuts   = rawList.filter(p => p.isCut);
+    // Step 2: Separate into groups
+    const finished = allPlayers.filter(p => !p.isCut && p.started && p.scoreNum !== null);
+    const notStarted = allPlayers.filter(p => !p.isCut && !p.started);
+    const cuts = allPlayers.filter(p => p.isCut);
 
-    // Assign positions with tie handling
-    let pos = 1;
-    for (let i = 0; i < active.length; i++) {
-      if (i > 0 && active[i].scoreNum === active[i-1].scoreNum) {
-        active[i].place = active[i-1].place; // tie
-      } else {
-        active[i].place = String(pos);
-      }
-      // Use T prefix for ties
-      const tieCount = active.filter(p => p.scoreNum === active[i].scoreNum).length;
-      if (tieCount > 1) active[i].place = 'T' + pos;
-      else active[i].place = String(pos);
-      pos++;
+    // Step 3: Sort finished players by score and assign positions with ties
+    finished.sort((a, b) => a.scoreNum - b.scoreNum);
+    let i = 0;
+    while (i < finished.length) {
+      let j = i;
+      // Find all players tied at this score
+      while (j < finished.length && finished[j].scoreNum === finished[i].scoreNum) j++;
+      const tieCount = j - i;
+      const pos = i + 1;
+      const placeStr = tieCount > 1 ? 'T' + pos : String(pos);
+      for (let k = i; k < j; k++) finished[k].place = placeStr;
+      i = j;
     }
+
+    notStarted.forEach(p => { p.place = '-'; });
     cuts.forEach(p => { p.place = 'CUT'; });
 
-    // Build liveScores map and leaderboard rows
+    // Step 4: Build liveScores and leaderboard
     const newScores = {};
     const leaderboardRows = [];
 
-    [...active, ...cuts].forEach(p => {
-      const key = normName(p.name);
-      const status = p.isCut ? 'cut' : 'active';
-      newScores[key] = { score: p.scoreDisp, rawScore: p.scoreNum, place: p.place, status };
-      leaderboardRows.push({ name: p.name, score: p.scoreDisp, place: p.place, status });
+    [...finished, ...notStarted, ...cuts].forEach(p => {
+      const scoreDisp = p.isCut ? 'CUT' : (p.scoreNum === null ? '-' : fmtScore(p.scoreNum));
+      const status    = p.isCut ? 'cut' : 'active';
+      const key       = normName(p.name);
+      const sortVal   = p.isCut ? 9999 : (p.scoreNum === null ? 9998 : p.scoreNum);
+      newScores[key]  = { score: scoreDisp, rawScore: p.scoreNum ?? 999, place: p.place, status };
+      leaderboardRows.push({ name: p.name, score: scoreDisp, place: p.place, status, sortVal });
     });
 
     liveScores = newScores;
@@ -455,18 +459,8 @@ function renderTeams() {
 function renderLiveLeaderboard(rows) {
   const wrap = document.getElementById('live-lb-wrap');
   if (!rows.length) { wrap.innerHTML = '<div style="padding:16px 20px; font-size:13px; color:rgba(245,240,232,0.35); text-align:center;">Scores not yet available</div>'; return; }
-  // Sort by score ascending (best score first), cuts at end
-  const sorted = [...rows].sort((a,b) => {
-    if (a.status==='cut' && b.status!=='cut') return 1;
-    if (b.status==='cut' && a.status!=='cut') return -1;
-    // Parse score for sorting: E=0, -3=-3, +2=2
-    const parseScore = s => {
-      if (!s || s==='-') return 999;
-      if (s==='E') return 0;
-      return parseInt(s) || 999;
-    };
-    return parseScore(a.score) - parseScore(b.score);
-  }).slice(0,15);
+  // Sort by score, not-started and cuts at end
+  const sorted = [...rows].sort((a,b) => (a.sortVal ?? 999) - (b.sortVal ?? 999)).slice(0,15);
 
   let html = `<table class="s-table"><thead><tr><th>Pos</th><th>Player</th><th style="text-align:right">Score</th></tr></thead><tbody>`;
   sorted.forEach(r => {
