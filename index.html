@@ -245,7 +245,7 @@ const PAY = [
 
 // ═══════════════════════════ SCORING LOGIC ═══════════════════════════════
 function getPoints(place, status) {
-  if (status === 'cut') return -2;
+  if (status === 'cut' || place === 'CUT') return -2;
   if (!place || place === '-') return 0;
   const p = parseInt(String(place).replace('T',''));
   if (isNaN(p)) return 0;
@@ -280,23 +280,48 @@ async function fetchScores() {
 
     if (!masters) throw new Error('Masters event not found in ESPN data');
 
-    // Extract competitors
+    const comps = masters.competitions?.[0]?.competitors || [];
+
+    // Build raw list with score as a number for sorting
+    const rawList = comps.map(c => {
+      const name     = c.athlete?.displayName || c.athlete?.fullName || '';
+      const scoreRaw = parseInt(c.score);
+      const scoreNum = isNaN(scoreRaw) ? 999 : scoreRaw;
+      const scoreDisp = isNaN(scoreRaw) ? '-' : fmtScore(scoreRaw);
+      const typeName  = (c.status?.type?.name || '').toLowerCase();
+      const isCut     = typeName.includes('cut') || typeName.includes('wd') || typeName.includes('dq');
+      return { name, scoreNum, scoreDisp, isCut };
+    });
+
+    // Sort active players by score ascending (best = lowest), cuts at bottom
+    const active = rawList.filter(p => !p.isCut).sort((a,b) => a.scoreNum - b.scoreNum);
+    const cuts   = rawList.filter(p => p.isCut);
+
+    // Assign positions with tie handling
+    let pos = 1;
+    for (let i = 0; i < active.length; i++) {
+      if (i > 0 && active[i].scoreNum === active[i-1].scoreNum) {
+        active[i].place = active[i-1].place; // tie
+      } else {
+        active[i].place = String(pos);
+      }
+      // Use T prefix for ties
+      const tieCount = active.filter(p => p.scoreNum === active[i].scoreNum).length;
+      if (tieCount > 1) active[i].place = 'T' + pos;
+      else active[i].place = String(pos);
+      pos++;
+    }
+    cuts.forEach(p => { p.place = 'CUT'; });
+
+    // Build liveScores map and leaderboard rows
     const newScores = {};
     const leaderboardRows = [];
 
-    const comps = masters.competitions?.[0]?.competitors || [];
-    comps.forEach(c => {
-      const raw  = c.athlete?.displayName || c.athlete?.fullName || '';
-      const name = normName(raw);
-      const scoreVal = c.score || c.linescores?.reduce((s,l)=>s+(parseInt(l.value)||0),0) || 0;
-      const scoreDisp = c.scoreValue !== undefined
-        ? fmtScore(c.scoreValue)
-        : (c.score !== undefined ? fmtScore(parseInt(c.score)) : '-');
-      const place  = c.status?.position?.id || c.sortOrder || '';
-      const status = (c.status?.type?.name || '').toLowerCase().includes('cut') ? 'cut'
-                   : (c.active ? 'active' : 'final');
-      newScores[name] = { score: scoreDisp, rawScore: parseInt(c.score)||0, place: String(place||''), status };
-      leaderboardRows.push({ name: raw, score: scoreDisp, place: String(place||''), status });
+    [...active, ...cuts].forEach(p => {
+      const key = normName(p.name);
+      const status = p.isCut ? 'cut' : 'active';
+      newScores[key] = { score: p.scoreDisp, rawScore: p.scoreNum, place: p.place, status };
+      leaderboardRows.push({ name: p.name, score: p.scoreDisp, place: p.place, status });
     });
 
     liveScores = newScores;
@@ -306,7 +331,6 @@ async function fetchScores() {
   } catch(err) {
     console.warn('ESPN fetch failed:', err);
     setStatus('error', err.message);
-    // Still render with dash scores
     renderAll([]);
   }
 }
