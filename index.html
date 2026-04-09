@@ -338,18 +338,26 @@ async function fetchScores() {
 function normName(n) {
   return n.trim().toLowerCase()
     .replace(/\./g,'').replace(/\s+/g,' ')
-    .replace(/^(de|van|mc)/,'');
+    .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // strip accents
 }
 
 function lookupPlayer(name) {
   const key = normName(name);
-  // Try exact
+  // Try exact match
   if (liveScores[key]) return liveScores[key];
-  // Try fuzzy: check if any stored key contains each word
-  const words = key.split(' ').filter(w=>w.length>2);
+  // Try last-name-only match (handles middle initials, accent differences)
+  const lastName = key.split(' ').pop();
+  const firstName = key.split(' ')[0];
+  // Match on last name + first name initial
   for (const [k,v] of Object.entries(liveScores)) {
-    if (words.every(w => k.includes(w))) return v;
+    const kParts = k.split(' ');
+    const kLast  = kParts[kParts.length-1];
+    const kFirst = kParts[0];
+    if (kLast === lastName && kFirst[0] === firstName[0]) return v;
   }
+  // Last resort: last name only (for unique last names)
+  const lastNameMatches = Object.entries(liveScores).filter(([k]) => k.split(' ').pop() === lastName);
+  if (lastNameMatches.length === 1) return lastNameMatches[0][1];
   return null;
 }
 
@@ -445,11 +453,17 @@ function renderTeams() {
 function renderLiveLeaderboard(rows) {
   const wrap = document.getElementById('live-lb-wrap');
   if (!rows.length) { wrap.innerHTML = '<div style="padding:16px 20px; font-size:13px; color:rgba(245,240,232,0.35); text-align:center;">Scores not yet available</div>'; return; }
-  // Sort by place number, put cuts at end
+  // Sort by score ascending (best score first), cuts at end
   const sorted = [...rows].sort((a,b) => {
     if (a.status==='cut' && b.status!=='cut') return 1;
     if (b.status==='cut' && a.status!=='cut') return -1;
-    return (parseInt(a.place)||999)-(parseInt(b.place)||999);
+    // Parse score for sorting: E=0, -3=-3, +2=2
+    const parseScore = s => {
+      if (!s || s==='-') return 999;
+      if (s==='E') return 0;
+      return parseInt(s) || 999;
+    };
+    return parseScore(a.score) - parseScore(b.score);
   }).slice(0,15);
 
   let html = `<table class="s-table"><thead><tr><th>Pos</th><th>Player</th><th style="text-align:right">Score</th></tr></thead><tbody>`;
