@@ -256,128 +256,67 @@ function getPoints(place, status) {
   return 1;
 }
 
-// ══════════════════════════ ESPN API FETCH ════════════════════════════════
-// ESPN's free public golf scoreboard endpoint — no key needed
-const ESPN_URL = 'https://site.api.espn.com/apis/site/v2/sports/golf/pga/scoreboard';
+// ══════════════════════════ MANUAL SCORES (R1 Complete) ═════════════════
+// Update player scores, place, and status here after each round
+const MANUAL_SCORES = {
+  "Scottie Scheffler":   { score: "-2", place: "T6",  status: "active" },
+  "Rory McIlroy":        { score: "-5", place: "T1",  status: "active" },
+  "Hideki Matsuyama":    { score: "E",  place: "T17", status: "active" },
+  "Chris Gotterup":      { score: "E",  place: "T17", status: "active" },
+  "Akshay Bhatia":       { score: "+1", place: "T33", status: "active" },
+  "Jason Day":           { score: "-3", place: "T3",  status: "active" },
+  "Jon Rahm":            { score: "+6", place: "T73", status: "active" },
+  "Robert MacIntyre":    { score: "+8", place: "T82", status: "active" },
+  "Patrick Reed":        { score: "-3", place: "T3",  status: "active" },
+  "Shane Lowry":         { score: "-2", place: "T6",  status: "active" },
+  "Min Woo Lee":         { score: "+6", place: "T73", status: "active" },
+  "Tommy Fleetwood":     { score: "-1", place: "T10", status: "active" },
+  "Justin Rose":         { score: "-2", place: "T6",  status: "active" },
+  "Si Woo Kim":          { score: "+3", place: "T48", status: "active" },
+  "Corey Conners":       { score: "+3", place: "T48", status: "active" },
+  "J.J. Spaun":          { score: "+2", place: "T40", status: "active" },
+  "Bryson DeChambeau":   { score: "+4", place: "T56", status: "active" },
+  "Brooks Koepka":       { score: "E",  place: "T17", status: "active" },
+  "Gary Woodland":       { score: "-1", place: "T10", status: "active" },
+  "Cameron Young":       { score: "+1", place: "T33", status: "active" },
+  "Viktor Hovland":      { score: "+3", place: "T48", status: "active" },
+  "Collin Morikawa":     { score: "+2", place: "T40", status: "active" },
+  "Jake Knapp":          { score: "+1", place: "T33", status: "active" },
+  "Justin Thomas":       { score: "E",  place: "T17", status: "active" },
+  "Tyrrell Hatton":      { score: "+2", place: "T40", status: "active" },
+  "Patrick Cantlay":     { score: "+5", place: "T65", status: "active" },
+  "Matt Fitzpatrick":    { score: "+2", place: "T40", status: "active" },
+  "Ludvig Åberg":        { score: "+2", place: "T40", status: "active" },
+  "Jacob Bridgeman":     { score: "-1", place: "T10", status: "active" },
+  "Adam Scott":          { score: "E",  place: "T17", status: "active" },
+  "Tommy Fleetwood":     { score: "-1", place: "T10", status: "active" },
+};
 
-let liveScores = {}; // { "Player Name": { score, place, status } }
+let liveScores = {};
 let lastUpdated = null;
 let refreshTimer = null;
 
-async function fetchScores() {
-  setStatus('loading');
-  try {
-    const res = await fetch(ESPN_URL);
-    if (!res.ok) throw new Error('HTTP ' + res.status);
-    const data = await res.json();
+function fetchScores() {
+  // Load manual scores into liveScores
+  const newScores = {};
+  const leaderboardRows = [];
 
-    const events = data.events || [];
-    const masters = events.find(e =>
-      (e.name || '').toLowerCase().includes('master') ||
-      (e.shortName || '').toLowerCase().includes('master')
-    ) || events[0];
+  Object.entries(MANUAL_SCORES).forEach(([name, data]) => {
+    const key = normName(name);
+    newScores[key] = { ...data, rawScore: parseRawScore(data.score) };
+    leaderboardRows.push({ name, ...data, sortVal: parseRawScore(data.score) });
+  });
 
-    if (!masters) throw new Error('Masters event not found in ESPN data');
-
-    const comps = masters.competitions?.[0]?.competitors || [];
-
-    // Step 1: Parse all players
-    const allPlayers = comps.map(c => {
-      const name     = c.athlete?.displayName || c.athlete?.fullName || '';
-      const scoreRaw = parseInt(c.score);
-      const scoreNum = isNaN(scoreRaw) ? null : scoreRaw;
-      const typeName = (c.status?.type?.name || '').toLowerCase();
-      const isCut    = typeName.includes('cut') || typeName.includes('wd') || typeName.includes('dq');
-      // A player has started if they have any linescores or status shows active/complete
-      const statusState = (c.status?.type?.state || '').toLowerCase();
-      const started  = isCut || statusState === 'in' || statusState === 'post' ||
-                       (c.linescores && c.linescores.length > 0);
-      return { name, scoreNum, isCut, started };
-    });
-
-    // Step 2: Separate into groups
-    const finished = allPlayers.filter(p => !p.isCut && p.started && p.scoreNum !== null);
-    const notStarted = allPlayers.filter(p => !p.isCut && !p.started);
-    const cuts = allPlayers.filter(p => p.isCut);
-
-    // Step 3: Sort finished players by score and assign positions with ties
-    finished.sort((a, b) => a.scoreNum - b.scoreNum);
-    let i = 0;
-    while (i < finished.length) {
-      let j = i;
-      // Find all players tied at this score
-      while (j < finished.length && finished[j].scoreNum === finished[i].scoreNum) j++;
-      const tieCount = j - i;
-      const pos = i + 1;
-      const placeStr = tieCount > 1 ? 'T' + pos : String(pos);
-      for (let k = i; k < j; k++) finished[k].place = placeStr;
-      i = j;
-    }
-
-    notStarted.forEach(p => { p.place = '-'; });
-    cuts.forEach(p => { p.place = 'CUT'; });
-
-    // Step 4: Build liveScores and leaderboard
-    const newScores = {};
-    const leaderboardRows = [];
-
-    [...finished, ...notStarted, ...cuts].forEach(p => {
-      const scoreDisp = p.isCut ? 'CUT' : (p.scoreNum === null ? '-' : fmtScore(p.scoreNum));
-      const status    = p.isCut ? 'cut' : 'active';
-      const key       = normName(p.name);
-      const sortVal   = p.isCut ? 9999 : (p.scoreNum === null ? 9998 : p.scoreNum);
-      newScores[key]  = { score: scoreDisp, rawScore: p.scoreNum ?? 999, place: p.place, status };
-      leaderboardRows.push({ name: p.name, score: scoreDisp, place: p.place, status, sortVal });
-    });
-
-    liveScores = newScores;
-    lastUpdated = new Date();
-    setStatus('live');
-    renderAll(leaderboardRows);
-  } catch(err) {
-    console.warn('ESPN fetch failed:', err);
-    setStatus('error', err.message);
-    renderAll([]);
-  }
+  liveScores = newScores;
+  lastUpdated = new Date();
+  setStatus('manual');
+  renderAll(leaderboardRows);
 }
 
-function normName(n) {
-  return n.trim().toLowerCase()
-    .replace(/\./g,'').replace(/\s+/g,' ')
-    .normalize('NFD').replace(/[\u0300-\u036f]/g,''); // strip accents
-}
-
-function lookupPlayer(name) {
-  const key = normName(name);
-  // Try exact match
-  if (liveScores[key]) return liveScores[key];
-  // Try last-name-only match (handles middle initials, accent differences)
-  const lastName = key.split(' ').pop();
-  const firstName = key.split(' ')[0];
-  // Match on last name + first name initial
-  for (const [k,v] of Object.entries(liveScores)) {
-    const kParts = k.split(' ');
-    const kLast  = kParts[kParts.length-1];
-    const kFirst = kParts[0];
-    if (kLast === lastName && kFirst[0] === firstName[0]) return v;
-  }
-  // Last resort: last name only (for unique last names)
-  const lastNameMatches = Object.entries(liveScores).filter(([k]) => k.split(' ').pop() === lastName);
-  if (lastNameMatches.length === 1) return lastNameMatches[0][1];
-  return null;
-}
-
-function fmtScore(n) {
-  if (isNaN(n) || n === null || n === undefined) return '-';
-  if (n === 0) return 'E';
-  return n > 0 ? '+'+n : String(n);
-}
-
-function scoreClass(s) {
-  if (!s || s==='-') return 'dash';
-  if (s==='E') return 'even';
-  if (s.startsWith('-')) return 'under';
-  return 'over';
+function parseRawScore(s) {
+  if (!s || s === '-') return 999;
+  if (s === 'E') return 0;
+  return parseInt(s) || 999;
 }
 
 // ═══════════════════════════════ RENDER ══════════════════════════════════
@@ -483,6 +422,10 @@ function setStatus(state, msg) {
     dot.classList.add('live');
     const t = lastUpdated ? lastUpdated.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
     text.innerHTML = `<strong>Live</strong> · Updated ${t} · Auto-refreshes every 5 min`;
+  } else if (state === 'manual') {
+    dot.classList.add('live');
+    const t = lastUpdated ? lastUpdated.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
+    text.innerHTML = `<strong>Round 1 Complete</strong> · Updated ${t}`;
   } else if (state === 'error') {
     dot.classList.add('error');
     text.innerHTML = `<strong>Using cached / manual scores</strong>${msg?' · '+msg:''}`;
@@ -505,8 +448,7 @@ renderPay();
 
 fetchScores();
 
-// Auto-refresh every 5 minutes
-refreshTimer = setInterval(fetchScores, 5 * 60 * 1000);
+// Manual mode - no auto-refresh needed
 </script>
 </body>
 </html>
