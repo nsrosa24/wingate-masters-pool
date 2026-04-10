@@ -228,6 +228,7 @@ const TEAMS = [
   { name: "Dave Blumberg",    picks: ["Tommy Fleetwood","Bryson DeChambeau","Justin Rose","Robert MacIntyre","Akshay Bhatia","Shane Lowry"] },
   { name: "Bryant Johnson",   picks: ["Scottie Scheffler","Rory McIlroy","Justin Rose","Viktor Hovland","Shane Lowry","Adam Scott"] },
 ];
+
 const PAY = [
   { name:"Grayson Sallade", paid:10},
   { name:"Brendan Dunphy",  paid:10},
@@ -243,88 +244,75 @@ const PAY = [
   { name:"Bryant Johnson",  paid:10},
 ];
 
+// ═══════════════════════════════════════════════════════════════════════════
+// SCORES — UPDATE THESE MANUALLY AFTER EACH ROUND
+// score: use "-5", "E", "+3" format
+// place: use "T1", "T6", "1" etc.
+// status: "active" for still playing, "cut" for missed cut
+// ═══════════════════════════════════════════════════════════════════════════
+const SCORES = {
+  "Scottie Scheffler":  { score: "-2", place: "T6",  status: "active" },
+  "Rory McIlroy":       { score: "-5", place: "T1",  status: "active" },
+  "Hideki Matsuyama":   { score: "E",  place: "T17", status: "active" },
+  "Chris Gotterup":     { score: "E",  place: "T17", status: "active" },
+  "Akshay Bhatia":      { score: "+1", place: "T33", status: "active" },
+  "Jason Day":          { score: "-3", place: "T3",  status: "active" },
+  "Jon Rahm":           { score: "+6", place: "T73", status: "active" },
+  "Robert MacIntyre":   { score: "+8", place: "T82", status: "active" },
+  "Patrick Reed":       { score: "-3", place: "T3",  status: "active" },
+  "Shane Lowry":        { score: "-2", place: "T6",  status: "active" },
+  "Min Woo Lee":        { score: "+6", place: "T73", status: "active" },
+  "Tommy Fleetwood":    { score: "-1", place: "T10", status: "active" },
+  "Justin Rose":        { score: "-2", place: "T6",  status: "active" },
+  "Si Woo Kim":         { score: "+3", place: "T48", status: "active" },
+  "Corey Conners":      { score: "+3", place: "T48", status: "active" },
+  "J.J. Spaun":         { score: "+2", place: "T40", status: "active" },
+  "Bryson DeChambeau":  { score: "+4", place: "T56", status: "active" },
+  "Brooks Koepka":      { score: "E",  place: "T17", status: "active" },
+  "Gary Woodland":      { score: "-1", place: "T10", status: "active" },
+  "Cameron Young":      { score: "+1", place: "T33", status: "active" },
+  "Viktor Hovland":     { score: "+3", place: "T48", status: "active" },
+  "Collin Morikawa":    { score: "+2", place: "T40", status: "active" },
+  "Jake Knapp":         { score: "+1", place: "T33", status: "active" },
+  "Justin Thomas":      { score: "E",  place: "T17", status: "active" },
+  "Tyrrell Hatton":     { score: "+2", place: "T40", status: "active" },
+  "Patrick Cantlay":    { score: "+5", place: "T65", status: "active" },
+  "Matt Fitzpatrick":   { score: "+2", place: "T40", status: "active" },
+  "Ludvig Åberg":       { score: "+2", place: "T40", status: "active" },
+  "Jacob Bridgeman":    { score: "-1", place: "T10", status: "active" },
+  "Adam Scott":         { score: "E",  place: "T17", status: "active" },
+};
+
 // ═══════════════════════════ SCORING LOGIC ═══════════════════════════════
 function getPoints(place, status) {
   if (status === 'cut' || place === 'CUT') return -2;
   if (!place || place === '-') return 0;
   const p = parseInt(String(place).replace('T',''));
   if (isNaN(p)) return 0;
-  if (p === 1) return 12;
-  if (p <= 5)  return 7;
-  if (p <= 10) return 4;
-  if (p <= 25) return 2;
+  if (p === 1)  return 12;
+  if (p <= 5)   return 7;
+  if (p <= 10)  return 4;
+  if (p <= 25)  return 2;
   return 1;
 }
 
-// ══════════════════════════ MANUAL SCORES (R1 Complete) ═════════════════
-// Update player scores, place, and status here after each round
-const MANUAL_SCORES = {
-  "Scottie Scheffler":   { score: "-2", place: "T6",  status: "active" },
-  "Rory McIlroy":        { score: "-5", place: "T1",  status: "active" },
-  "Hideki Matsuyama":    { score: "E",  place: "T17", status: "active" },
-  "Chris Gotterup":      { score: "E",  place: "T17", status: "active" },
-  "Akshay Bhatia":       { score: "+1", place: "T33", status: "active" },
-  "Jason Day":           { score: "-3", place: "T3",  status: "active" },
-  "Jon Rahm":            { score: "+6", place: "T73", status: "active" },
-  "Robert MacIntyre":    { score: "+8", place: "T82", status: "active" },
-  "Patrick Reed":        { score: "-3", place: "T3",  status: "active" },
-  "Shane Lowry":         { score: "-2", place: "T6",  status: "active" },
-  "Min Woo Lee":         { score: "+6", place: "T73", status: "active" },
-  "Tommy Fleetwood":     { score: "-1", place: "T10", status: "active" },
-  "Justin Rose":         { score: "-2", place: "T6",  status: "active" },
-  "Si Woo Kim":          { score: "+3", place: "T48", status: "active" },
-  "Corey Conners":       { score: "+3", place: "T48", status: "active" },
-  "J.J. Spaun":          { score: "+2", place: "T40", status: "active" },
-  "Bryson DeChambeau":   { score: "+4", place: "T56", status: "active" },
-  "Brooks Koepka":       { score: "E",  place: "T17", status: "active" },
-  "Gary Woodland":       { score: "-1", place: "T10", status: "active" },
-  "Cameron Young":       { score: "+1", place: "T33", status: "active" },
-  "Viktor Hovland":      { score: "+3", place: "T48", status: "active" },
-  "Collin Morikawa":     { score: "+2", place: "T40", status: "active" },
-  "Jake Knapp":          { score: "+1", place: "T33", status: "active" },
-  "Justin Thomas":       { score: "E",  place: "T17", status: "active" },
-  "Tyrrell Hatton":      { score: "+2", place: "T40", status: "active" },
-  "Patrick Cantlay":     { score: "+5", place: "T65", status: "active" },
-  "Matt Fitzpatrick":    { score: "+2", place: "T40", status: "active" },
-  "Ludvig Åberg":        { score: "+2", place: "T40", status: "active" },
-  "Jacob Bridgeman":     { score: "-1", place: "T10", status: "active" },
-  "Adam Scott":          { score: "E",  place: "T17", status: "active" },
-  "Tommy Fleetwood":     { score: "-1", place: "T10", status: "active" },
-};
-
-let liveScores = {};
-let lastUpdated = null;
-let refreshTimer = null;
-
-function fetchScores() {
-  // Load manual scores into liveScores
-  const newScores = {};
-  const leaderboardRows = [];
-
-  Object.entries(MANUAL_SCORES).forEach(([name, data]) => {
-    const key = normName(name);
-    newScores[key] = { ...data, rawScore: parseRawScore(data.score) };
-    leaderboardRows.push({ name, ...data, sortVal: parseRawScore(data.score) });
-  });
-
-  liveScores = newScores;
-  lastUpdated = new Date();
-  setStatus('manual');
-  renderAll(leaderboardRows);
+function scoreClass(s) {
+  if (!s || s === '-') return 'dash';
+  if (s === 'E') return 'even';
+  if (s.startsWith('-')) return 'under';
+  return 'over';
 }
 
-function parseRawScore(s) {
-  if (!s || s === '-') return 999;
-  if (s === 'E') return 0;
-  return parseInt(s) || 999;
+function lookupPlayer(name) {
+  return SCORES[name] || null;
 }
 
 // ═══════════════════════════════ RENDER ══════════════════════════════════
-function renderAll(leaderboardRows) {
+function renderAll() {
   renderStandings();
   renderPay();
   renderTeams();
-  renderLiveLeaderboard(leaderboardRows);
+  renderTopLeaderboard();
 }
 
 function renderStandings() {
@@ -359,12 +347,12 @@ function renderTeams() {
   TEAMS.forEach(team => {
     let totalPts = 0;
     let rows = '';
-    team.picks.forEach((player,i) => {
+    team.picks.forEach((player, i) => {
       const d = lookupPlayer(player);
       const pts = d ? getPoints(d.place, d.status) : 0;
       totalPts += pts;
-      const sc   = d?.score  || '-';
-      const pl   = d?.place  || '-';
+      const sc = d?.score || '-';
+      const pl = d?.place || '-';
       const isCut = d?.status === 'cut';
       rows += `<tr class="${isCut?'cut-row':''}">
         <td class="pn">${i+1}</td>
@@ -395,46 +383,28 @@ function renderTeams() {
   });
 }
 
-function renderLiveLeaderboard(rows) {
+function renderTopLeaderboard() {
   const wrap = document.getElementById('live-lb-wrap');
-  if (!rows.length) { wrap.innerHTML = '<div style="padding:16px 20px; font-size:13px; color:rgba(245,240,232,0.35); text-align:center;">Scores not yet available</div>'; return; }
-  // Sort by score, not-started and cuts at end
-  const sorted = [...rows].sort((a,b) => (a.sortVal ?? 999) - (b.sortVal ?? 999)).slice(0,15);
+  const sorted = Object.entries(SCORES)
+    .filter(([,d]) => d.status !== 'cut' && d.score !== '-')
+    .sort((a,b) => {
+      const parse = s => s==='E'?0:parseInt(s)||999;
+      return parse(a[1].score) - parse(b[1].score);
+    }).slice(0,15);
 
   let html = `<table class="s-table"><thead><tr><th>Pos</th><th>Player</th><th style="text-align:right">Score</th></tr></thead><tbody>`;
-  sorted.forEach(r => {
-    html += `<tr style="${r.status==='cut'?'opacity:0.4':''}">
-      <td style="color:rgba(245,240,232,0.5);font-size:13px">${r.place}</td>
-      <td style="font-size:14px">${r.name}</td>
-      <td class="ps ${scoreClass(r.score)}" style="text-align:right">${r.score}</td>
+  sorted.forEach(([name, d]) => {
+    html += `<tr>
+      <td style="color:rgba(245,240,232,0.5);font-size:13px">${d.place}</td>
+      <td style="font-size:14px">${name}</td>
+      <td class="ps ${scoreClass(d.score)}" style="text-align:right">${d.score}</td>
     </tr>`;
   });
   html += '</tbody></table>';
   wrap.innerHTML = html;
 }
 
-// ═══════════════════════════ STATUS BAR ══════════════════════════════════
-function setStatus(state, msg) {
-  const dot  = document.getElementById('status-dot');
-  const text = document.getElementById('status-text');
-  dot.className = 'status-dot';
-  if (state === 'live') {
-    dot.classList.add('live');
-    const t = lastUpdated ? lastUpdated.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
-    text.innerHTML = `<strong>Live</strong> · Updated ${t} · Auto-refreshes every 5 min`;
-  } else if (state === 'manual') {
-    dot.classList.add('live');
-    const t = lastUpdated ? lastUpdated.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'}) : '';
-    text.innerHTML = `<strong>Round 1 Complete</strong> · Updated ${t}`;
-  } else if (state === 'error') {
-    dot.classList.add('error');
-    text.innerHTML = `<strong>Using cached / manual scores</strong>${msg?' · '+msg:''}`;
-  } else {
-    text.innerHTML = 'Fetching live scores…';
-  }
-}
-
-// ══════════════════════════ NAV & INIT ═══════════════════════════════════
+// ══════════════════════════ NAV & STATUS ═════════════════════════════════
 function showPage(name, btn) {
   document.querySelectorAll('.page').forEach(p=>p.classList.remove('active'));
   document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active'));
@@ -442,13 +412,16 @@ function showPage(name, btn) {
   btn.classList.add('active');
 }
 
-// Initial render with blanks, then fetch
-renderAll([]);
-renderPay();
+function setStatus() {
+  const dot  = document.getElementById('status-dot');
+  const text = document.getElementById('status-text');
+  dot.className = 'status-dot live';
+  text.innerHTML = `<strong>Round 1 Complete</strong> · Update scores in code for Round 2`;
+}
 
-fetchScores();
-
-// Manual mode - no auto-refresh needed
+// ── INIT ─────────────────────────────────────────────────────────────────
+setStatus();
+renderAll();
 </script>
 </body>
 </html>
