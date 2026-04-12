@@ -251,36 +251,36 @@ const PAY = [
 // status: "active" for still playing, "cut" for missed cut
 // ═══════════════════════════════════════════════════════════════════════════
 const SCORES = {
-  "Scottie Scheffler":  { score: "E",   place: "T24", status: "active" },
-  "Rory McIlroy":       { score: "-12", place: "1",   status: "active" },
-  "Hideki Matsuyama":   { score: "-2",  place: "T16", status: "active" },
-  "Chris Gotterup":     { score: "-3",  place: "T13", status: "active" },
+  "Scottie Scheffler":  { score: "-7",  place: "T7",  status: "active" },
+  "Rory McIlroy":       { score: "-11", place: "1",   status: "active" },
+  "Hideki Matsuyama":   { score: "-2",  place: "T29", status: "active" },
+  "Chris Gotterup":     { score: "-3",  place: "T21", status: "active" },
   "Akshay Bhatia":      { score: "+6",  place: "MC",  status: "cut"    },
-  "Jason Day":          { score: "-4",  place: "T7",  status: "active" },
-  "Jon Rahm":           { score: "+4",  place: "T47", status: "active" },
+  "Jason Day":          { score: "-8",  place: "T5",  status: "active" },
+  "Jon Rahm":           { score: "+5",  place: "T48", status: "active" },
   "Robert MacIntyre":   { score: "+7",  place: "MC",  status: "cut"    },
-  "Patrick Reed":       { score: "-6",  place: "2",   status: "active" },
-  "Shane Lowry":        { score: "-5",  place: "T4",  status: "active" },
+  "Patrick Reed":       { score: "-6",  place: "T9",  status: "active" },
+  "Shane Lowry":        { score: "-9",  place: "T4",  status: "active" },
   "Min Woo Lee":        { score: "+11", place: "MC",  status: "cut"    },
-  "Tommy Fleetwood":    { score: "-5",  place: "T4",  status: "active" },
-  "Justin Rose":        { score: "-5",  place: "T4",  status: "active" },
+  "Tommy Fleetwood":    { score: "-4",  place: "T15", status: "active" },
+  "Justin Rose":        { score: "-8",  place: "T5",  status: "active" },
   "Si Woo Kim":         { score: "+4",  place: "T47", status: "active" },
-  "Corey Conners":      { score: "+4",  place: "T47", status: "active" },
+  "Corey Conners":      { score: "+3",  place: "T44", status: "active" },
   "J.J. Spaun":         { score: "+5",  place: "MC",  status: "cut"    },
   "Bryson DeChambeau":  { score: "+6",  place: "MC",  status: "cut"    },
-  "Brooks Koepka":      { score: "-3",  place: "T13", status: "active" },
-  "Gary Woodland":      { score: "+2",  place: "T39", status: "active" },
-  "Cameron Young":      { score: "-4",  place: "T7",  status: "active" },
-  "Viktor Hovland":     { score: "+2",  place: "T39", status: "active" },
-  "Collin Morikawa":    { score: "-1",  place: "T20", status: "active" },
-  "Jake Knapp":         { score: "-2",  place: "T16", status: "active" },
-  "Justin Thomas":      { score: "+2",  place: "T39", status: "active" },
-  "Tyrrell Hatton":     { score: "-4",  place: "T7",  status: "active" },
-  "Patrick Cantlay":    { score: "E",   place: "T24", status: "active" },
-  "Matt Fitzpatrick":   { score: "-1",  place: "T20", status: "active" },
-  "Ludvig Åberg":       { score: "E",   place: "T24", status: "active" },
-  "Jacob Bridgeman":    { score: "+1",  place: "T32", status: "active" },
-  "Adam Scott":         { score: "+2",  place: "T39", status: "active" },
+  "Brooks Koepka":      { score: "-4",  place: "T15", status: "active" },
+  "Gary Woodland":      { score: "+6",  place: "T51", status: "active" },
+  "Cameron Young":      { score: "-11", place: "1",   status: "active" },
+  "Viktor Hovland":     { score: "+1",  place: "T39", status: "active" },
+  "Collin Morikawa":    { score: "-5",  place: "T12", status: "active" },
+  "Jake Knapp":         { score: "-5",  place: "T12", status: "active" },
+  "Justin Thomas":      { score: "+1",  place: "T39", status: "active" },
+  "Tyrrell Hatton":     { score: "-4",  place: "T15", status: "active" },
+  "Patrick Cantlay":    { score: "-6",  place: "T9",  status: "active" },
+  "Matt Fitzpatrick":   { score: "-3",  place: "T21", status: "active" },
+  "Ludvig Åberg":       { score: "-3",  place: "T21", status: "active" },
+  "Jacob Bridgeman":    { score: "-2",  place: "T29", status: "active" },
+  "Adam Scott":         { score: "E",   place: "T36", status: "active" },
 };
 
 // ═══════════════════════════ SCORING LOGIC ═══════════════════════════════
@@ -416,7 +416,7 @@ function setStatus() {
   const dot  = document.getElementById('status-dot');
   const text = document.getElementById('status-text');
   dot.className = 'status-dot live';
-  text.innerHTML = `<strong>Round 2 Complete</strong> · Update scores in code for Round 3`;
+  text.innerHTML = `<strong>Round 3 Complete</strong> · Update scores in code for Round 4`;
 }
 
 // ── INIT ─────────────────────────────────────────────────────────────────
